@@ -8,5 +8,6 @@ namespace UygunsuzlukBackend.Data
         public UygunsuzlukDbContext(DbContextOptions<UygunsuzlukDbContext> options) : base(options) { }
 
         public DbSet<UygunsuzlukKaydi> Uygunsuzluklar { get; set; }
+        public DbSet<Kullanici> Kullanicilar { get; set; }
     }
 }
