@@ -1,0 +1,7 @@
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.csproj.AssemblyReference.cache
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.AssemblyInfoInputs.cache
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.AssemblyInfo.cs
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.csproj.CoreCompileInputs.cache
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\User\Desktop\UygunsuzlukProjem\UygunsuzlukBackend\obj\Debug\net8.0\UygunsuzlukBackend.MvcApplicationPartsAssemblyInfo.cache
