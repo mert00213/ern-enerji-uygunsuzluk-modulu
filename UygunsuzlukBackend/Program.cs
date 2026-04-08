@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 // 4. HTTP istek boru hattı (Pipeline) ayarları
 if (app.Environment.IsDevelopment())
 {
