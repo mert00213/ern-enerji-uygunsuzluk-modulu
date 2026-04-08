@@ -1,82 +1,190 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
-import axios from 'axios';
+import { 
+  StyleSheet, View, TextInput, TouchableOpacity, 
+  KeyboardAvoidingView, Platform, ScrollView, Image, Text,
+  Dimensions
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const API_URL = Platform.OS === 'web'
-  ? 'http://localhost:5075/api'
-  : 'http://10.4.10.211:5075/api';
+const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [kullaniciAd, setKullaniciAd] = useState('');
-  const [sifre, setSifre] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
-    if (kullaniciAd === '' || sifre === '') {
-      Alert.alert('Hata', 'Lütfen tüm alanlari doldurun!');
-      return;
-    }
-
-    try {
-      const response = await axios.post(`${API_URL}/Auth/login`, {
-        kullaniciAd: kullaniciAd,
-        sifreHash: sifre,
-      });
-
-      if (response.status === 200) {
-        router.replace('/(tabs)');
-      }
-    } catch (error: any) {
-      const status = error?.response?.status;
-      const mesaj =
-        error?.response?.data?.mesaj ||
-        error?.response?.data ||
-        error?.message ||
-        'Bilinmeyen hata';
-      Alert.alert('Hata', `Kod: ${status ?? 'Yok'}\n${mesaj}`);
-      console.log('Login hatası:', error?.response ?? error);
-    }
+  const handleLogin = () => {
+    router.replace('/(tabs)');
   };
 
   return (
-    <View style={styles.authContainer}>
-      <View style={styles.logoCircle}>
-        <Text style={styles.logoText}>ERN</Text>
-      </View>
-      <Text style={styles.authTitle}>Personel Girişi</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        // iOS ve Android için farklı davranışlar gerekebilir
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        // Klavyenin üstünde kalacak ekstra boşluk (Hata buradaydı)
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          bounces={false} 
+          showsVerticalScrollIndicator={false}
+          // Klavye açıkken dokunulduğunda klavyeyi kapatır
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo ve Başlık Alanı */}
+          <View style={styles.headerSection}>
+            <Image 
+              source={require('../../assets/image_6.png')} 
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.brandName}>PERSONEL GİRİŞİ</Text>
+            <Text style={styles.brandSub}>Saha Uygunsuzluk Yönetim Sistemi</Text>
+          </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Kullanici Adi"
-        value={kullaniciAd}
-        onChangeText={setKullaniciAd}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Şifre"
-        secureTextEntry
-        value={sifre}
-        onChangeText={setSifre}
-      />
+          {/* Form Alanı */}
+          <View style={styles.formSection}>
+            <Text style={styles.welcomeText}>Hoş Geldiniz</Text>
+            <Text style={styles.instructionText}>Devam etmek için lütfen giriş yapın.</Text>
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.buttonText}>GİRİŞ YAP</Text>
-      </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>KULLANICI ADI (E-POSTA)</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="person-outline" size={20} color="#627C77" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Kullanıcı adınızı girin"
+                  placeholderTextColor="#A0AAB2"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
 
-      <Text style={styles.footerNote}>Ern Enerji Portal v1.0</Text>
-    </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>ŞİFRE</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color="#627C77" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Şifrenizi girin"
+                  placeholderTextColor="#A0AAB2"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Ionicons name="enter-outline" size={22} color="#FFF" style={{marginRight: 10}} />
+              <Text style={styles.loginButtonText}>Giriş Yap</Text>
+            </TouchableOpacity>
+
+            {/* Klavye açıldığında ScrollView'ın sonuna ekstra pay bırakır */}
+            <View style={{ height: 50 }} />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  authContainer: { flex: 1, justifyContent: 'center', padding: 30, backgroundColor: '#fdfdfd' },
-  logoCircle: { width: 80, height: 80, backgroundColor: '#512BD4', borderRadius: 40, alignSelf: 'center', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  logoText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
-  authTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 30, color: '#333' },
-  input: { backgroundColor: '#eee', padding: 15, borderRadius: 10, marginBottom: 15, fontSize: 16 },
-  loginButton: { backgroundColor: '#512BD4', padding: 18, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  footerNote: { textAlign: 'center', marginTop: 50, color: '#aaa', fontSize: 12 },
+  safeArea: { flex: 1, backgroundColor: '#F8FBF9' },
+  
+  scrollContent: { 
+    flexGrow: 1, 
+    justifyContent: 'center',
+    paddingVertical: 20 
+  },
+
+  headerSection: {
+    paddingTop: height * 0.05,
+    paddingBottom: 20,
+    backgroundColor: '#F8FBF9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 130,
+    height: 130,
+    marginBottom: 15,
+  },
+  brandName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#00584E',
+    letterSpacing: 2,
+  },
+  brandSub: {
+    fontSize: 12,
+    color: '#627C77',
+    marginTop: 5,
+    fontWeight: '500',
+  },
+
+  formSection: {
+    paddingHorizontal: 30,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#00584E',
+    textAlign: 'center',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#747876',
+    marginTop: 5,
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#627C77',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EAEFEA',
+    paddingHorizontal: 15,
+    height: 55,
+    elevation: 2,
+  },
+  inputIcon: { marginRight: 10 },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#00584E',
+  },
+  loginButton: {
+    backgroundColor: '#00584E',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 55,
+    borderRadius: 12,
+    marginTop: 15,
+    elevation: 4,
+  },
+  loginButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });

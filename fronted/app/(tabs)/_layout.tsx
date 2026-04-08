@@ -10,17 +10,20 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#512BD4',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: '#00584E',
+        tabBarInactiveTintColor: '#747876',
         tabBarStyle: {
           backgroundColor: '#fff',
           borderTopWidth: 1,
-          borderTopColor: '#eee',
+          borderTopColor: '#E8EDEB',
           height: 65 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : (Platform.OS === 'ios' ? 20 : 10),
           paddingTop: 10,
           elevation: 10,
-          shadowOpacity: 0.1,
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowOffset: { width: 0, height: -2 },
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -45,25 +48,31 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View style={{
               position: 'relative',
-              top: -10, // Havaya kalkma miktarını boyutuna göre dengeledik
-              width: 36, // İyice kibarlaştırıldı (42 idi)
+              top: -10,
+              width: 36,
               height: 36, 
-              borderRadius: 18, // Genişliğin tam yarısı (tam yuvarlak)
-              backgroundColor: '#512BD4',
+              borderRadius: 18,
+              backgroundColor: '#00584E',
               justifyContent: 'center',
               alignItems: 'center',
               borderWidth: 3, 
               borderColor: '#FFF', 
               elevation: 4,
-              shadowColor: '#512BD4',
+              shadowColor: '#00584E',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.3,
               shadowRadius: 3,
             }}>
-              {/* İkon boyutu 20'ye düşürüldü */}
               <Ionicons name="add" size={20} color="#fff" />
             </View>
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="detail"
+        options={{
+          href: null, // Bu satır butonu menüden gizler ama sayfa çalışmaya devam eder
         }}
       />
     </Tabs>
