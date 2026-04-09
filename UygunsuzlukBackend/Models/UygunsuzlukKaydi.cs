@@ -8,5 +8,8 @@ namespace UygunsuzlukBackend.Models
         public string FotografYolu { get; set; } = string.Empty;
         public DateTime TespitTarihi { get; set; } = DateTime.UtcNow; 
         public bool CozulduMu { get; set; } = false;
+
+        // --- PROFESYONEL SİLME (SOFT DELETE) İÇİN EKLENEN KISIM ---
+        public bool SilindiMi { get; set; } = false;
     }
 }

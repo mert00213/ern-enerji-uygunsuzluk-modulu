@@ -22,9 +22,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        // iOS ve Android için farklı davranışlar gerekebilir
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        // Klavyenin üstünde kalacak ekstra boşluk (Hata buradaydı)
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         style={{ flex: 1 }}
       >
@@ -32,7 +30,6 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent} 
           bounces={false} 
           showsVerticalScrollIndicator={false}
-          // Klavye açıkken dokunulduğunda klavyeyi kapatır
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo ve Başlık Alanı */}
@@ -48,9 +45,7 @@ export default function LoginScreen() {
 
           {/* Form Alanı */}
           <View style={styles.formSection}>
-            <Text style={styles.welcomeText}>Hoş Geldiniz</Text>
-            <Text style={styles.instructionText}>Devam etmek için lütfen giriş yapın.</Text>
-
+            
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>KULLANICI ADI (E-POSTA)</Text>
               <View style={styles.inputWrapper}>
@@ -62,6 +57,9 @@ export default function LoginScreen() {
                   value={email}
                   onChangeText={setEmail}
                   autoCapitalize="none"
+                  // iOS Otomatik Kaydı Engelleme Adımı 1:
+                  textContentType="none"
+                  autoComplete="off"
                 />
               </View>
             </View>
@@ -77,6 +75,10 @@ export default function LoginScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
+                  // iOS Otomatik Kaydı Engelleme Adımı 2: 
+                  // "oneTimeCode" iOS'a bu şifrenin tek seferlik olduğunu söyler ve saklamaz.
+                  textContentType="oneTimeCode"
+                  autoComplete="off"
                 />
               </View>
             </View>
@@ -86,7 +88,6 @@ export default function LoginScreen() {
               <Text style={styles.loginButtonText}>Giriş Yap</Text>
             </TouchableOpacity>
 
-            {/* Klavye açıldığında ScrollView'ın sonuna ekstra pay bırakır */}
             <View style={{ height: 50 }} />
           </View>
         </ScrollView>
@@ -97,64 +98,20 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FBF9' },
-  
-  scrollContent: { 
-    flexGrow: 1, 
-    justifyContent: 'center',
-    paddingVertical: 20 
-  },
-
+  scrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
   headerSection: {
     paddingTop: height * 0.05,
-    paddingBottom: 20,
+    paddingBottom: 40,
     backgroundColor: '#F8FBF9',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoImage: {
-    width: 130,
-    height: 130,
-    marginBottom: 15,
-  },
-  brandName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#00584E',
-    letterSpacing: 2,
-  },
-  brandSub: {
-    fontSize: 12,
-    color: '#627C77',
-    marginTop: 5,
-    fontWeight: '500',
-  },
-
-  formSection: {
-    paddingHorizontal: 30,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#00584E',
-    textAlign: 'center',
-  },
-  instructionText: {
-    fontSize: 14,
-    color: '#747876',
-    marginTop: 5,
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  inputContainer: {
-    marginBottom: 15,
-  },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#627C77',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
+  logoImage: { width: 130, height: 130, marginBottom: 15 },
+  brandName: { fontSize: 22, fontWeight: 'bold', color: '#00584E', letterSpacing: 2 },
+  brandSub: { fontSize: 12, color: '#627C77', marginTop: 5, fontWeight: '500' },
+  formSection: { paddingHorizontal: 30 },
+  inputContainer: { marginBottom: 15 },
+  inputLabel: { fontSize: 11, fontWeight: '700', color: '#627C77', marginBottom: 8, letterSpacing: 1 },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,11 +124,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   inputIcon: { marginRight: 10 },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#00584E',
-  },
+  input: { flex: 1, fontSize: 16, color: '#00584E' },
   loginButton: {
     backgroundColor: '#00584E',
     flexDirection: 'row',
@@ -182,9 +135,5 @@ const styles = StyleSheet.create({
     marginTop: 15,
     elevation: 4,
   },
-  loginButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  loginButtonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
 });
