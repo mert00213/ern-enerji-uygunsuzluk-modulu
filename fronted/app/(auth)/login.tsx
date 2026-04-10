@@ -2,21 +2,65 @@ import React, { useState } from 'react';
 import { 
   StyleSheet, View, TextInput, TouchableOpacity, 
   KeyboardAvoidingView, Platform, ScrollView, Image, Text,
-  Dimensions
+  Dimensions, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+// InfoModal'ı import etmeyi unutma:
+import InfoModal from '../../components/InfoModal'; 
 
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [kullaniciAd, setKullaniciAd] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    router.replace('/(tabs)');
+  // Modal Durum Yönetimi
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const handleLogin = async () => {
+    if (!kullaniciAd.trim() || !password.trim()) {
+      setModalTitle("Uyarı");
+      setModalMessage("Lütfen tüm alanları doldurun.");
+      setModalVisible(true);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://10.4.10.211:5075/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kullaniciAd: kullaniciAd,
+          sifreHash: password 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // GİRİŞ BAŞARILI
+        router.replace('/(tabs)');
+      } else {
+        // GİRİŞ BAŞARISIZ - Kırmızı Modal Tetiklenir
+        setModalTitle("Hatalı Giriş");
+        setModalMessage(data.mesaj || "Giriş bilgileri doğrulanamadı.");
+        setModalVisible(true);
+      }
+    } catch (error) {
+      setModalTitle("Bağlantı Hatası");
+      setModalMessage("Sunucuya ulaşılamadı. IP adresini kontrol edin.");
+      setModalVisible(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,7 +76,6 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Logo ve Başlık Alanı */}
           <View style={styles.headerSection}>
             <Image 
               source={require('../../assets/image_6.png')} 
@@ -43,23 +86,18 @@ export default function LoginScreen() {
             <Text style={styles.brandSub}>Saha Uygunsuzluk Yönetim Sistemi</Text>
           </View>
 
-          {/* Form Alanı */}
           <View style={styles.formSection}>
-            
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>KULLANICI ADI (E-POSTA)</Text>
+              <Text style={styles.inputLabel}>KULLANICI ADI</Text>
               <View style={styles.inputWrapper}>
                 <Ionicons name="person-outline" size={20} color="#627C77" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Kullanıcı adınızı girin"
                   placeholderTextColor="#A0AAB2"
-                  value={email}
-                  onChangeText={setEmail}
+                  value={kullaniciAd}
+                  onChangeText={setKullaniciAd}
                   autoCapitalize="none"
-                  // iOS Otomatik Kaydı Engelleme Adımı 1:
-                  textContentType="none"
-                  autoComplete="off"
                 />
               </View>
             </View>
@@ -75,23 +113,39 @@ export default function LoginScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
-                  // iOS Otomatik Kaydı Engelleme Adımı 2: 
-                  // "oneTimeCode" iOS'a bu şifrenin tek seferlik olduğunu söyler ve saklamaz.
-                  textContentType="oneTimeCode"
-                  autoComplete="off"
                 />
               </View>
             </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Ionicons name="enter-outline" size={22} color="#FFF" style={{marginRight: 10}} />
-              <Text style={styles.loginButtonText}>Giriş Yap</Text>
+            <TouchableOpacity 
+              style={[styles.loginButton, loading && { opacity: 0.7 }]} 
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <>
+                  <Ionicons name="enter-outline" size={22} color="#FFF" style={{marginRight: 10}} />
+                  <Text style={styles.loginButtonText}>Giriş Yap</Text>
+                </>
+              )}
             </TouchableOpacity>
 
             <View style={{ height: 50 }} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* KIRMIZI MODAL BURADA ÇAĞRILIYOR */}
+      <InfoModal 
+        visible={modalVisible}
+        title={modalTitle}
+        message={modalMessage}
+        type="error" // Kırmızı tema için "error" gönderiyoruz
+        onClose={() => setModalVisible(false)}
+      />
+
     </SafeAreaView>
   );
 }

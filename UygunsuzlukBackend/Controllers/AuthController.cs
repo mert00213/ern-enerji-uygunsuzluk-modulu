@@ -19,24 +19,44 @@ namespace UygunsuzlukBackend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<Kullanici>> Register(Kullanici request)
+        public async Task<ActionResult> Register(Kullanici request)
         {
+            if (await _context.Kullanicilar.AnyAsync(u => u.KullaniciAd == request.KullaniciAd))
+            {
+                return BadRequest(new { mesaj = "Bu kullanıcı adı zaten mevcut!" });
+            }
+
             request.SifreHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.SifreHash)));
+            
             _context.Kullanicilar.Add(request);
             await _context.SaveChangesAsync();
-            return Ok(new { mesaj = "Kullanici basariyla olusturuldu!" });
+            
+            return Ok(new { mesaj = "Kullanıcı başarıyla oluşturuldu!" });
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(Kullanici request)
+        public async Task<ActionResult> Login(Kullanici request)
         {
             var user = await _context.Kullanicilar.FirstOrDefaultAsync(u => u.KullaniciAd == request.KullaniciAd);
-            if (user == null) return BadRequest(new { mesaj = "Kullanici bulunamadi." });
+            
+            if (user == null) 
+            {
+                return Unauthorized(new { mesaj = "Kullanıcı adı veya şifre hatalı!" });
+            }
 
             var loginSifreHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.SifreHash)));
-            if (user.SifreHash != loginSifreHash) return BadRequest(new { mesaj = "Hatali sifre!" });
+            
+            if (user.SifreHash != loginSifreHash) 
+            {
+                return Unauthorized(new { mesaj = "Kullanıcı adı veya şifre hatalı!" });
+            }
 
-            return Ok(new { mesaj = "Giris basarili!" });
+            // DÜZELTİLEN KISIM BURASI: user.Id yerine user.KullaniciAd döndürüyoruz
+            return Ok(new { 
+                mesaj = "Giriş başarılı!", 
+                kullaniciId = user.KullaniciAd, 
+                kullaniciAd = user.KullaniciAd 
+            });
         }
     }
 }

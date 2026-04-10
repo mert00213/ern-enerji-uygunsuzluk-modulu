@@ -6,32 +6,56 @@ interface InfoModalProps {
   visible: boolean;
   title?: string;
   message: string;
-  type?: 'success' | 'warning';
+  type?: 'success' | 'warning' | 'error'; // Error tipi eklendi
   onClose: () => void;
 }
 
 export default function InfoModal({ visible, title = 'Bilgi', message, type = 'success', onClose }: InfoModalProps) {
   
+  // TİP KONTROLLERİ
   const isWarning = type === 'warning';
-  const iconName = isWarning ? 'warning' : 'checkmark-circle';
+  const isError = type === 'error';
+
+  // İKON BELİRLEME
+  let iconName: keyof typeof Ionicons.glyphMap = 'checkmark-circle';
+  if (isWarning) iconName = 'warning';
+  if (isError) iconName = 'close-circle'; // Hata için çarpı ikonu
   
-  // YENİ TURUNCU RENKLER
-  const iconColor = isWarning ? '#F39C12' : '#00584E'; 
-  const circleBgColor = isWarning ? '#FEF5E7' : '#EAF6F4'; 
+  // RENK BELİRLEME
+  let iconColor = '#00584E'; // Default Yeşil
+  let circleBgColor = '#EAF6F4';
+  let buttonColor = '#00584E';
+
+  if (isWarning) {
+    iconColor = '#F39C12'; // Turuncu
+    circleBgColor = '#FEF5E7';
+    buttonColor = '#F39C12';
+  } else if (isError) {
+    iconColor = '#E74C3C'; // KIRMIZI
+    circleBgColor = '#FDEDEC';
+    buttonColor = '#E74C3C';
+  }
 
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.container}>
           
+          {/* İkon Dairesi */}
           <View style={[styles.iconCircle, { backgroundColor: circleBgColor }]}>
             <Ionicons name={iconName} size={40} color={iconColor} />
           </View>
           
-          <Text style={styles.title}>{title}</Text>
+          {/* Başlık - Hata durumunda kırmızı olur */}
+          <Text style={[styles.title, isError && { color: '#E74C3C' }]}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           
-          <TouchableOpacity style={styles.button} onPress={onClose} activeOpacity={0.8}>
+          {/* Buton - Dinamik renkli */}
+          <TouchableOpacity 
+            style={[styles.button, { backgroundColor: buttonColor }]} 
+            onPress={onClose} 
+            activeOpacity={0.8}
+          >
             <Text style={styles.buttonText}>Tamam</Text>
           </TouchableOpacity>
           
@@ -44,55 +68,53 @@ export default function InfoModal({ visible, title = 'Bilgi', message, type = 's
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.6)', // Biraz daha koyulaştırdım ki kırmızı öne çıksın
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
     width: '82%',
     backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingVertical: 30,
+    borderRadius: 24, // Biraz daha yumuşattım
+    paddingVertical: 32,
     paddingHorizontal: 24,
     alignItems: 'center',
-    elevation: 10,
+    elevation: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 20,
   },
   iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#00584E',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   message: {
-    fontSize: 14,
-    color: '#747876',
+    fontSize: 15,
+    color: '#555',
     textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 30,
   },
   button: {
-    backgroundColor: '#00584E',
-    paddingVertical: 14,
-    paddingHorizontal: 48,
-    borderRadius: 14,
+    paddingVertical: 16,
+    borderRadius: 16,
     width: '100%',
     alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
