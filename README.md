@@ -1,50 +1,45 @@
-# 🏗️ Ern Enerji - Şantiye Uygunsuzluk Takip Modülü
+# 🏗️ ERN Enerji - Saha Uygunsuzluk Yönetim Sistemi (Alt Modül)
 
-![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-
-Bu proje, **Ern Enerji** portalına entegre edilmek üzere geliştirilmiş kapsamlı bir şantiye uygunsuzluk (tespit ve takip) modülüdür. Sahadaki personelin karşılaştığı kalite veya iş güvenliği ihlallerini (örneğin: açıkta bırakılan demir filizleri, yalıtım hataları vb.) mobil cihazlar üzerinden anında sisteme kaydetmesini ve bu süreçlerin merkezden yönetilmesini sağlar.
-
----
+Bu proje, şantiye ve saha alanlarında tespit edilen iş sağlığı ve güvenliği (İSG) veya yapısal uygunsuzlukların, personeller tarafından mobil cihazlar üzerinden anlık olarak fotoğraflı bir şekilde sisteme kaydedilmesini ve yönetilmesini sağlayan bir modüldür. ERN Enerji'nin mevcut dijital altyapısına entegre edilmek üzere tam yığın (full-stack) olarak geliştirilmiştir.
 
 ## ✨ Öne Çıkan Özellikler
 
-- 📸 **Mobil Kayıt:** Sahadan anlık olarak uygunsuzluk fotoğrafı çekme veya galeriye erişim.
-- 📝 **Detaylı Raporlama:** Tespit edilen soruna ait başlık, açıklama ve tarih bilgilerinin sisteme girilmesi.
-- ✅ **Durum Takibi:** Kaydedilen uygunsuzlukların "Çözüldü" veya "Çözülmedi" (Aktif) olarak durumlarının güncellenebilmesi.
-- ⚡ **Yüksek Performans:** .NET 8.0 Web API ile hızlı yanıt süreleri ve güvenli veri aktarımı.
+* **Güvenli Kimlik Doğrulama:** SHA256 şifreleme altyapısı ile güvenli personel girişi ve hatalı girişlerde modern uyarı sistemi (401 Unauthorized yönetimi).
+* **Fotoğraflı Tespit:** Saha personellerinin cihaz kamerasını veya galerisini kullanarak uygunsuzluk anını fotoğraflaması ve kaydetmesi.
+* **İlişkisel Veri Yönetimi:** Her uygunsuzluk kaydının, o kaydı açan personelin sistemdeki ID'si (OlusturanKullaniciId) ile ilişkili olarak tutulması.
+* **Modern UI/UX Tasarım:** Kullanıcı dostu arayüz, özel tasarım hata modalları ve şirket kurumsal kimliğine uygun renk paleti.
+
+## 🛠️ Kullanılan Teknolojiler
+
+**Frontend (Mobil Arayüz):**
+* React Native (Expo)
+* Expo Router (Sayfa yönlendirmeleri)
+* StyleSheet / Flexbox (Arayüz tasarımı)
+
+**Backend (API Servisi):**
+* .NET Core 8 Web API
+* Entity Framework Core (Code-First yaklaşımı)
+* C# Cryptography (SHA256 Şifreleme)
+
+**Veritabanı:**
+* PostgreSQL
 
 ---
 
-## 🛠 Kullanılan Teknolojiler
+## ⚙️ Modül Entegrasyonu ve Geliştirici Notları
 
-Proje, "Separation of Concerns" (Sorumlulukların Ayrılması) prensibine uygun olarak Frontend ve Backend olmak üzere iki ayrı mimaride tasarlanmıştır.
+Bu proje, bağımsız bir uygulama olmaktan ziyade, ERN Enerji'nin mevcut ana mobil uygulamasına ve backend sistemine bir **alt modül (sub-module)** olarak entegre edilmek üzere tasarlanmıştır. Sisteme tak-çalıştır mantığıyla eklenebilecek bir yapıda kurgulanmıştır.
 
-### Ön Yüz (Frontend)
-- **Framework:** React Native (Expo)
-- **Dil:** TypeScript
-- **Kullanım:** iOS ve Android uyumlu mobil arayüz.
+### 1. Backend Entegrasyonu (API & Database)
+* **Controller Taşınması:** Modül içerisindeki `AuthController` ve `UygunsuzlukController` dosyaları, ana projenin API katmanına doğrudan eklenebilir.
+* **Veritabanı Birleştirme:** Modül içindeki `Uygunsuzluklar` tablosu (Code-First), ana sistemin `DbContext` yapısına `DbSet<UygunsuzlukKaydi>` olarak dahil edilmelidir. Veritabanı güncellemeleri (Migration) ana proje üzerinden yürütülmelidir.
+* **Kullanıcı İlişkisi:** Ana sistemdeki mevcut personel ID yapısı, bu modüldeki `OlusturanKullaniciId` (Foreign Key) ile doğrudan eşleşecek şekilde tasarlanmıştır. Özel bir eşleştirme tablosuna gerek yoktur.
 
-### Arka Uç (Backend)
-- **Framework:** ASP.NET Core Web API (.NET 8.0)
-- **Dil:** C#
-- **ORM:** Entity Framework Core
-- **Veritabanı:** PostgreSQL
+### 2. Frontend Entegrasyonu (Mobil Ekranlar)
+* **Sayfa Yönlendirmeleri:** `fronted/app/` altındaki sayfalar (Login ve Uygunsuzluk Listesi/Ekleme ekranları), ana uygulamanın navigasyon yapısına (React Navigation veya Expo Router) modüler ekranlar olarak entegre edilebilir.
+* **API İstekleri:** Uygulama içindeki `fetch` ile atılan API isteklerinde yer alan geliştirme (localhost/lokal IP) adresleri, entegrasyon aşamasında şirketin ana API gateway veya production sunucu adresleriyle güncellenmelidir.
 
 ---
 
-## 📂 Proje Klasör Yapısı
-
-```text
-ern-enerji-uygunsuzluk-modulu/
-│
-├── fronted/                 # React Native (Expo) Mobil Uygulama Dosyaları
-│   ├── assets/              # Uygulama içi görseller ve ikonlar
-│   ├── App.tsx              # Uygulamanın ana giriş noktası
-│   └── package.json         # Frontend bağımlılıkları
-│
-└── UygunsuzlukBackend/      # .NET 8 Web API Dosyaları
-    ├── Controllers/         # API uç noktaları (Gelen istekleri karşılayan kısım)
-    ├── Models/              # Veritabanı tablolarının C# nesne karşılıkları (Örn: Uygunsuzluk
+## 📝 Kurumsal Staj Projesi Notu
+Bu modül, yazılım geliştirme süreçlerini (Frontend, Backend, Veritabanı, Güvenlik) uçtan uca pratik etmek ve ERN Enerji'nin dijital dönüşüm süreçlerine katkı sağlamak amacıyla bir staj projesi kapsamında geliştirilmiştir.
