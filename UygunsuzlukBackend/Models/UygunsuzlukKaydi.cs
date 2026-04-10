@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace UygunsuzlukBackend.Models
 {
     public class UygunsuzlukKaydi
@@ -11,5 +13,11 @@ namespace UygunsuzlukBackend.Models
 
         // --- PROFESYONEL SİLME (SOFT DELETE) İÇİN EKLENEN KISIM ---
         public bool SilindiMi { get; set; } = false;
+
+        // --- KULLANICI İLİŞKİSİ (FOREIGN KEY) ---
+        [ForeignKey("OlusturanKullanici")]
+        public int? OlusturanKullaniciId { get; set; }
+
+        public virtual Kullanici? OlusturanKullanici { get; set; }
     }
 }

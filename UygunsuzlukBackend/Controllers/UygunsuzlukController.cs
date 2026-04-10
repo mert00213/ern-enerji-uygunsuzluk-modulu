@@ -18,12 +18,25 @@ namespace UygunsuzlukBackend.Controllers
 
         // 1. LİSTELEME (GET) - GÜNCELLENDİ
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UygunsuzlukKaydi>>> GetUygunsuzluklar()
+        public async Task<ActionResult> GetUygunsuzluklar()
         {
-            // Sadece SilindiMi durumu "false" olan (aktif) kayıtları getir
-            return await _context.Uygunsuzluklar
-                                 .Where(k => k.SilindiMi == false)
-                                 .ToListAsync();
+            var sonuc = await _context.Uygunsuzluklar
+                .Include(k => k.OlusturanKullanici)
+                .Where(k => k.SilindiMi == false)
+                .OrderByDescending(k => k.TespitTarihi)
+                .Select(k => new
+                {
+                    k.Id,
+                    k.Baslik,
+                    k.Aciklama,
+                    k.TespitTarihi,
+                    k.FotografYolu,
+                    k.CozulduMu,
+                    EkleyenKisi = k.OlusturanKullanici != null ? k.OlusturanKullanici.KullaniciAd : null
+                })
+                .ToListAsync();
+
+            return Ok(sonuc);
         }
 
         // 2. EKLEME (POST) - AYNEN KALIYOR

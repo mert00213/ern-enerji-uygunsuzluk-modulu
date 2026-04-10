@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import InfoModal from '../../components/InfoModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddIssueScreen() {
   const router = useRouter();
@@ -49,12 +50,16 @@ export default function AddIssueScreen() {
     setKaydediliyor(true); 
 
     try {
+      // Login sırasında saklanan sayısal kullanıcı ID'sini al
+      const odKullaniciId = await AsyncStorage.getItem('kullaniciId');
+
       const yeniKayit = {
         baslik: baslik,
         aciklama: aciklama,
         cozulduMu: false, 
         tespitTarihi: new Date().toISOString(), 
-        fotografYolu: selectedImages.join(',')
+        fotografYolu: selectedImages.join(','),
+        olusturanKullaniciId: odKullaniciId ? parseInt(odKullaniciId) : null
       };
 
       const response = await fetch('http://10.4.10.211:5075/api/Uygunsuzluk', {

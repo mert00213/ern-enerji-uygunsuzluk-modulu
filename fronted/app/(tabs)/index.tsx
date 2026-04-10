@@ -30,7 +30,8 @@ export default function IssuesScreen() {
         description: item.aciklama,
         status: item.cozulduMu ? 'Giderildi' : 'Açık',
         date: new Date(item.tespitTarihi).toLocaleDateString('tr-TR'), 
-        images: item.fotografYolu ? item.fotografYolu.split(',') : []
+        images: item.fotografYolu ? item.fotografYolu.split(',') : [],
+        ekleyenKisi: item.ekleyenKisi || 'Bilinmiyor'
       }));
 
       setIssues(formatliVeriler);
@@ -70,25 +71,23 @@ export default function IssuesScreen() {
       )}
       
       <View style={styles.cardContent}>
-        <View style={styles.cardHeaderRow}>
-          <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-        </View>
-        <View style={styles.cardInfoRow}>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+
+        <View style={styles.cardMetaRow}>
           <Text style={styles.cardDate}>{item.date}</Text>
-          
-          <View style={styles.rightAlignedInfo}>
-            <View style={[styles.statusBadge, { backgroundColor: item.status === 'Açık' ? '#FDEDEC' : '#EAFAF1' }]}>
-              <Text style={[styles.statusText, { color: item.status === 'Açık' ? '#E74C3C' : '#00584E' }]}>{item.status}</Text>
-            </View>
-            
-            {item.images && item.images.length > 1 && (
-              <View style={styles.imageIndicatorContainer}>
-                {/* --- İKON RENGİ YEŞİL YAPILDI --- */}
-                <Ionicons name="images-outline" size={12} color="#00584E" /> 
-                <Text style={styles.imageIndicatorText}>+{item.images.length - 1}</Text>
-              </View>
-            )}
+          <View style={[styles.statusBadge, { backgroundColor: item.status === 'Açık' ? '#FDEDEC' : '#EAFAF1' }]}>
+            <Text style={[styles.statusText, { color: item.status === 'Açık' ? '#E74C3C' : '#00584E' }]}>{item.status}</Text>
           </View>
+        </View>
+
+        <View style={styles.cardFooterRow}>
+          <Text style={styles.cardEkleyen}>👤 {item.ekleyenKisi}</Text>
+          {item.images && item.images.length > 1 && (
+            <View style={styles.imageIndicatorContainer}>
+              <Ionicons name="images-outline" size={12} color="#00584E" />
+              <Text style={styles.imageIndicatorText}>+{item.images.length - 1}</Text>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -158,18 +157,18 @@ const styles = StyleSheet.create({
   portalSubtitle: { color: '#EAEFED', fontSize: 10, fontWeight: 'bold', letterSpacing: 1.5, opacity: 0.9, marginBottom: 4 },
   portalTitle: { color: '#FFF', fontSize: 28, fontWeight: 'bold' },
   logoutButton: { backgroundColor: '#FFF', width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', elevation: 4 },
-  card: { flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 16, marginBottom: 15, elevation: 4, overflow: 'hidden', minHeight: 90 },
+  card: { flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 16, marginBottom: 15, elevation: 4, overflow: 'hidden', minHeight: 100, shadowColor: '#0A5A4A', shadowOpacity: 0.08, shadowOffset: { width: 0, height: 3 }, shadowRadius: 8 },
   cardAccent: { width: 6 },
   cardThumbnail: { width: 85, height: '100%', resizeMode: 'cover' },
-  cardContent: { flex: 1, padding: 12, justifyContent: 'center' },
-  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#00584E', flex: 1, paddingRight: 10 },
-  cardInfoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  cardDate: { fontSize: 11, color: '#747876', paddingBottom: 4 },
-  rightAlignedInfo: { alignItems: 'flex-end' },
+  cardContent: { flex: 1, padding: 12, justifyContent: 'space-between' },
+  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#0A5A4A', marginBottom: 6 },
+  cardMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardDate: { fontSize: 11, color: '#9BA3A0' },
+  cardFooterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardEkleyen: { fontSize: 11, color: '#9BA3A0' },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
   statusText: { fontSize: 9, fontWeight: 'bold' },
-  imageIndicatorContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  imageIndicatorContainer: { flexDirection: 'row', alignItems: 'center' },
   imageIndicatorText: { fontSize: 10, color: '#747876', fontWeight: 'bold', marginLeft: 3 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

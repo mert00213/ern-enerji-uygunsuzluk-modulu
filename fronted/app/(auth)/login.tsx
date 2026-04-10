@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 // InfoModal'ı import etmeyi unutma:
 import InfoModal from '../../components/InfoModal'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { height } = Dimensions.get('window');
 
@@ -46,6 +47,9 @@ export default function LoginScreen() {
       const data = await response.json();
 
       if (response.ok) {
+        // Sayısal kullanıcı ID'sini ve adını sakla
+        await AsyncStorage.setItem('kullaniciId', String(data.kullaniciId));
+        await AsyncStorage.setItem('kullaniciAd', data.kullaniciAd);
         // GİRİŞ BAŞARILI
         router.replace('/(tabs)');
       } else {

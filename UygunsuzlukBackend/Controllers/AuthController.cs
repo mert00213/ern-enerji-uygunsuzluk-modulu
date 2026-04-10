@@ -51,10 +51,10 @@ namespace UygunsuzlukBackend.Controllers
                 return Unauthorized(new { mesaj = "Kullanıcı adı veya şifre hatalı!" });
             }
 
-            // DÜZELTİLEN KISIM BURASI: user.Id yerine user.KullaniciAd döndürüyoruz
+            // DÜZELTİLEN KISIM BURASI: Artık sayısal Id döndürüyoruz
             return Ok(new { 
                 mesaj = "Giriş başarılı!", 
-                kullaniciId = user.KullaniciAd, 
+                kullaniciId = user.Id, 
                 kullaniciAd = user.KullaniciAd 
             });
         }

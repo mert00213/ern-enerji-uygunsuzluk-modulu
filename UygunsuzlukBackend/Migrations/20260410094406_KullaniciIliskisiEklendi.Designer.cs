@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UygunsuzlukBackend.Data;
@@ -11,9 +12,11 @@ using UygunsuzlukBackend.Data;
 namespace UygunsuzlukBackend.Migrations
 {
     [DbContext(typeof(UygunsuzlukDbContext))]
-    partial class UygunsuzlukDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260410094406_KullaniciIliskisiEklendi")]
+    partial class KullaniciIliskisiEklendi
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,24 +27,14 @@ namespace UygunsuzlukBackend.Migrations
 
             modelBuilder.Entity("UygunsuzlukBackend.Models.Kullanici", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<string>("KullaniciAd")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SifreHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("KullaniciAd")
-                        .IsUnique();
+                    b.HasKey("KullaniciAd");
 
                     b.ToTable("Kullanicilar");
                 });
@@ -69,8 +62,8 @@ namespace UygunsuzlukBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("OlusturanKullaniciId")
-                        .HasColumnType("integer");
+                    b.Property<string>("OlusturanKullaniciId")
+                        .HasColumnType("text");
 
                     b.Property<bool>("SilindiMi")
                         .HasColumnType("boolean");
