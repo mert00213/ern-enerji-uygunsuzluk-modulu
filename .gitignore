@@ -1,0 +1,86 @@
+# =====================
+#  .NET / C# Derleme Çıktıları
+# =====================
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.dll
+*.exe
+*.pdb
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.cache
+*.log
+
+# NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Visual Studio
+.vs/
+*.rsuser
+*.sln.docstates
+launchSettings.json
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# =====================
+#  Node.js / React Native (Expo)
+# =====================
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+
+# Metro
+.metro-health-check*
+
+# Native (Expo)
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+/ios
+/android
+
+# =====================
+#  Genel / OS
+# =====================
+.DS_Store
+Thumbs.db
+*.pem
+*.env
+.env*.local
