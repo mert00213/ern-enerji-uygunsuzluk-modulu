@@ -4,14 +4,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import InfoModal from '../../components/InfoModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// İzin verilen MIME tipleri (Sadece resmi dokümanlar — fotoğraflar ayrı alanda)
+const IZIN_VERILEN_MIME_TIPLERI = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+
+type SecilenDosya = {
+  uri: string;
+  name: string;
+  mimeType: string;
+};
 
 export default function AddIssueScreen() {
   const router = useRouter();
   const [baslik, setBaslik] = useState('');
   const [aciklama, setAciklama] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [secilenDosya, setSecilenDosya] = useState<SecilenDosya | null>(null);
   const [kaydediliyor, setKaydediliyor] = useState(false); 
   const [hataModalVisible, setHataModalVisible] = useState(false);
   const [hataModalMesaj, setHataModalMesaj] = useState('');
@@ -40,6 +57,29 @@ export default function AddIssueScreen() {
     }
   };
 
+  // Dosya Yöneticisinden Belge Seçme (Sadece PDF, Word, Excel)
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: IZIN_VERILEN_MIME_TIPLERI,
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setSecilenDosya({
+          uri: asset.uri,
+          name: asset.name,
+          mimeType: asset.mimeType || 'application/octet-stream',
+        });
+      }
+    } catch (error) {
+      console.error('Dosya seçme hatası:', error);
+      setHataModalMesaj('Dosya seçilirken bir sorun oluştu.');
+      setHataModalVisible(true);
+    }
+  };
+
   const handleSave = async () => {
     if (!baslik.trim() || !aciklama.trim() || selectedImages.length === 0) {
       setHataModalMesaj('Lütfen tüm zorunlu alanları (Başlık, Açıklama ve Medya) doldurun.');
@@ -50,36 +90,51 @@ export default function AddIssueScreen() {
     setKaydediliyor(true); 
 
     try {
-      // Login sırasında saklanan sayısal kullanıcı ID'sini al
       const odKullaniciId = await AsyncStorage.getItem('kullaniciId');
 
-      const yeniKayit = {
-        baslik: baslik,
-        aciklama: aciklama,
-        cozulduMu: false, 
-        tespitTarihi: new Date().toISOString(), 
-        fotografYolu: selectedImages.join(','),
-        olusturanKullaniciId: odKullaniciId ? parseInt(odKullaniciId) : null
-      };
+      // FormData objesi oluştur
+      const formData = new FormData();
+      formData.append('Baslik', baslik);
+      formData.append('Aciklama', aciklama);
+      formData.append('CozulduMu', 'false');
+      formData.append('TespitTarihi', new Date().toISOString());
+      formData.append('FotografYolu', selectedImages.join(','));
+
+      if (odKullaniciId) {
+        formData.append('OlusturanKullaniciId', odKullaniciId);
+      }
+
+      // Seçilen belgeyi FormData'ya ekle
+      if (secilenDosya) {
+        formData.append('ekDosya', {
+          uri: secilenDosya.uri,
+          name: secilenDosya.name,
+          type: secilenDosya.mimeType,
+        } as any);
+      }
 
       const response = await fetch('http://10.4.10.211:5075/api/Uygunsuzluk', {
-        method: 'POST', 
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', 
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(yeniKayit) 
+        body: formData,
       });
 
-      if (!response.ok) throw new Error('Sunucuya kaydedilemedi');
+      if (!response.ok) {
+        const hataMetni = await response.text();
+        throw new Error(hataMetni || 'Sunucuya kaydedilemedi');
+      }
 
       setBaslik('');
       setAciklama('');
       setSelectedImages([]);
+      setSecilenDosya(null);
       setBasariliModalVisible(true);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Kayıt hatası:", error);
-      setHataModalMesaj('Sisteme kaydedilirken bir sorun oluştu. Bağlantınızı kontrol edin.');
+      setHataModalMesaj(error.message || 'Sisteme kaydedilirken bir sorun oluştu. Bağlantınızı kontrol edin.');
       setHataModalVisible(true);
     } finally {
       setKaydediliyor(false); 
@@ -128,6 +183,22 @@ export default function AddIssueScreen() {
                 <Text style={styles.mediaBtnText}>GALERİDEN SEÇ</Text>
               </TouchableOpacity>
             </View>
+
+            <Text style={styles.inputLabel}>DOSYA / BELGE EKLE</Text>
+            <TouchableOpacity style={styles.documentBtn} onPress={pickDocument}>
+              <Ionicons name="document-attach" size={24} color="#00584E" />
+              <Text style={styles.mediaBtnText}>PDF, WORD VEYA EXCEL SEÇ</Text>
+            </TouchableOpacity>
+
+            {secilenDosya && (
+              <View style={styles.selectedFileRow}>
+                <Ionicons name="checkmark-circle" size={18} color="#27AE60" />
+                <Text style={styles.selectedFileName} numberOfLines={1}>{secilenDosya.name}</Text>
+                <TouchableOpacity onPress={() => setSecilenDosya(null)}>
+                  <Ionicons name="close-circle" size={20} color="#E74C3C" />
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* FOTOĞRAFLARIN LİSTELENDİĞİ YENİ YATAY ALAN */}
             {selectedImages.length > 0 && (
@@ -203,6 +274,11 @@ const styles = StyleSheet.create({
   mediaBtn: { flex: 1, borderWidth: 1.5, borderColor: '#D5DCDA', borderStyle: 'dashed', borderRadius: 12, padding: 15, alignItems: 'center', backgroundColor: '#fff' },
   mediaBtnText: { fontSize: 10, fontWeight: 'bold', color: '#00584E', marginTop: 8 },
   
+  // Dosya/Belge seçici butonu
+  documentBtn: { borderWidth: 1.5, borderColor: '#D5DCDA', borderStyle: 'dashed', borderRadius: 12, padding: 15, alignItems: 'center', backgroundColor: '#F0F5F3', marginBottom: 10, marginTop: 5 },
+  selectedFileRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', borderRadius: 10, padding: 10, marginBottom: 10, gap: 8 },
+  selectedFileName: { flex: 1, fontSize: 13, color: '#2D3436' },
+
   // Resim listesi için stil
   imageListContainer: { marginTop: 15, marginBottom: 5 },
   imageWrapper: { width: 100, height: 100, borderRadius: 12, overflow: 'hidden', position: 'relative', marginRight: 10 },

@@ -31,6 +31,7 @@ export default function IssuesScreen() {
         status: item.cozulduMu ? 'Giderildi' : 'Açık',
         date: new Date(item.tespitTarihi).toLocaleDateString('tr-TR'), 
         images: item.fotografYolu ? item.fotografYolu.split(',') : [],
+        dosyaYolu: item.dosyaYolu || '',
         ekleyenKisi: item.ekleyenKisi || 'Bilinmiyor'
       }));
 
@@ -57,7 +58,8 @@ export default function IssuesScreen() {
         description: item.description,
         status: item.status,
         date: item.date,
-        images: JSON.stringify(item.images || []) 
+        images: JSON.stringify(item.images || []),
+        dosyaYolu: item.dosyaYolu || ''
       }
     });
   };
@@ -82,12 +84,20 @@ export default function IssuesScreen() {
 
         <View style={styles.cardFooterRow}>
           <Text style={styles.cardEkleyen}>👤 {item.ekleyenKisi}</Text>
-          {item.images && item.images.length > 1 && (
-            <View style={styles.imageIndicatorContainer}>
-              <Ionicons name="images-outline" size={12} color="#00584E" />
-              <Text style={styles.imageIndicatorText}>+{item.images.length - 1}</Text>
-            </View>
-          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {item.dosyaYolu ? (
+              <View style={styles.imageIndicatorContainer}>
+                <Ionicons name="document-attach-outline" size={12} color="#00584E" />
+                <Text style={styles.imageIndicatorText}>Belge</Text>
+              </View>
+            ) : null}
+            {item.images && item.images.length > 1 && (
+              <View style={styles.imageIndicatorContainer}>
+                <Ionicons name="images-outline" size={12} color="#00584E" />
+                <Text style={styles.imageIndicatorText}>+{item.images.length - 1}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>

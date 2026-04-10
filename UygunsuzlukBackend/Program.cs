@@ -29,6 +29,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+app.UseStaticFiles(); // wwwroot/uploads altındaki dosyalara erişim
 //app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
