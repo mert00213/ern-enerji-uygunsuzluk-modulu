@@ -28,6 +28,7 @@ namespace UygunsuzlukBackend.Controllers
         {
             var sonuc = await _context.Uygunsuzluklar
                 .Include(k => k.OlusturanKullanici)
+                .Include(k => k.Dosyalar)
                 .Where(k => k.SilindiMi == false)
                 .OrderByDescending(k => k.TespitTarihi)
                 .Select(k => new
@@ -39,52 +40,68 @@ namespace UygunsuzlukBackend.Controllers
                     k.FotografYolu,
                     k.DosyaYolu,
                     k.CozulduMu,
-                    EkleyenKisi = k.OlusturanKullanici != null ? k.OlusturanKullanici.KullaniciAd : null
+                    EkleyenKisi = k.OlusturanKullanici != null ? k.OlusturanKullanici.KullaniciAd : null,
+                    Dosyalar = k.Dosyalar.Select(d => d.DosyaYolu).ToList()
                 })
                 .ToListAsync();
 
             return Ok(sonuc);
         }
 
-        // 2. EKLEME (POST) - FormData ile Dosya Yükleme Destekli
+        // 2. EKLEME (POST) - FormData ile Çoklu Dosya Yükleme Destekli
         [HttpPost]
-        [RequestSizeLimit(MaxDosyaBoyutu)]
-        public async Task<ActionResult<UygunsuzlukKaydi>> PostUygunsuzluk([FromForm] UygunsuzlukKaydi kayit, IFormFile? ekDosya)
+        [RequestSizeLimit(100 * 1024 * 1024)] // Çoklu dosya için 100 MB limit
+        public async Task<ActionResult<UygunsuzlukKaydi>> PostUygunsuzluk([FromForm] UygunsuzlukKaydi kayit, List<IFormFile>? ekBelgeler)
         {
-            if (ekDosya != null && ekDosya.Length > 0)
-            {
-                // 1. Dosya boyutu kontrolü
-                if (ekDosya.Length > MaxDosyaBoyutu)
-                {
-                    return BadRequest("Dosya boyutu 10 MB'ı aşamaz.");
-                }
-
-                // 2. Uzantı kontrolü (sunucu tarafı güvenlik)
-                var uzanti = Path.GetExtension(ekDosya.FileName).ToLowerInvariant();
-                if (string.IsNullOrEmpty(uzanti) || !IzinVerilenUzantilar.Contains(uzanti))
-                {
-                    return BadRequest($"Geçersiz dosya formatı: '{uzanti}'. İzin verilen formatlar: {string.Join(", ", IzinVerilenUzantilar)}");
-                }
-
-                // 3. Kayıt klasörünü oluştur
-                var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "dokumanlar");
-                Directory.CreateDirectory(uploadsFolder);
-
-                // 4. Eşsiz dosya adı üret (Guid) ve kaydet
-                var benzersizAd = $"{Guid.NewGuid()}{uzanti}";
-                var tamYol = Path.Combine(uploadsFolder, benzersizAd);
-
-                using (var stream = new FileStream(tamYol, FileMode.Create))
-                {
-                    await ekDosya.CopyToAsync(stream);
-                }
-
-                // 5. Veritabanına kaydedilecek göreli yolu ata
-                kayit.DosyaYolu = $"/uploads/dokumanlar/{benzersizAd}";
-            }
+            // Eski tek dosya alanını temizle (artık dosyalar ayrı tabloda)
+            kayit.DosyaYolu = string.Empty;
 
             _context.Uygunsuzluklar.Add(kayit);
             await _context.SaveChangesAsync();
+
+            // Çoklu dosya işleme
+            if (ekBelgeler != null && ekBelgeler.Count > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "dokumanlar");
+                Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var dosya in ekBelgeler)
+                {
+                    if (dosya.Length == 0) continue;
+
+                    // Boyut kontrolü
+                    if (dosya.Length > MaxDosyaBoyutu)
+                    {
+                        return BadRequest($"'{dosya.FileName}' dosyası 10 MB sınırını aşıyor.");
+                    }
+
+                    // Uzantı kontrolü (her dosya için ayrı ayrı)
+                    var uzanti = Path.GetExtension(dosya.FileName).ToLowerInvariant();
+                    if (string.IsNullOrEmpty(uzanti) || !IzinVerilenUzantilar.Contains(uzanti))
+                    {
+                        return BadRequest($"Geçersiz dosya formatı: '{dosya.FileName}'. İzin verilen formatlar: {string.Join(", ", IzinVerilenUzantilar)}");
+                    }
+
+                    // Eşsiz dosya adı üret ve kaydet
+                    var benzersizAd = $"{Guid.NewGuid()}{uzanti}";
+                    var tamYol = Path.Combine(uploadsFolder, benzersizAd);
+
+                    using (var stream = new FileStream(tamYol, FileMode.Create))
+                    {
+                        await dosya.CopyToAsync(stream);
+                    }
+
+                    // Yeni tabloya dosya kaydı ekle
+                    _context.UygunsuzlukDosyalari.Add(new UygunsuzlukDosya
+                    {
+                        DosyaYolu = $"/uploads/dokumanlar/{benzersizAd}",
+                        UygunsuzlukId = kayit.Id
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
             return CreatedAtAction(nameof(GetUygunsuzluklar), new { id = kayit.Id }, kayit);
         }
 

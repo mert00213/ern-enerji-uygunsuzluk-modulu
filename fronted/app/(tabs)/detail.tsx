@@ -21,6 +21,9 @@ export default function IssueDetailScreen() {
   // Ana sayfadan gönderilen virgüllerle ayrılmış string'i diziye çeviriyoruz
   const images = params.images ? JSON.parse(params.images as string) : [];
 
+  // Dosyalar dizisini parse et
+  const dosyalar: string[] = params.dosyalar ? JSON.parse(params.dosyalar as string) : [];
+
   // react-native-image-viewing kütüphanesi bizden { uri: '...' } formatında bir dizi bekler
   const imagesFormatted = images.map((img: string) => ({ uri: img }));
 
@@ -104,8 +107,26 @@ export default function IssueDetailScreen() {
           <Text style={styles.sectionTitle}>AÇIKLAMA</Text>
           <Text style={styles.description}>{params.description}</Text>
 
-          {/* EKLI BELGE BÖLÜMÜ */}
-          {params.dosyaYolu ? (
+          {/* EKLI BELGELER BÖLÜMÜ (ÇOKLU DOSYA DESTEĞİ) */}
+          {dosyalar.length > 0 ? (
+            <>
+              <View style={styles.divider} />
+              <Text style={styles.sectionTitle}>EKLI BELGELER ({dosyalar.length})</Text>
+              {dosyalar.map((dosyaYolu: string, index: number) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.documentRow}
+                  onPress={() => Linking.openURL(`http://10.4.10.211:5075${dosyaYolu}`)}
+                >
+                  <Ionicons name="document-attach" size={22} color="#00584E" />
+                  <Text style={styles.documentLinkText} numberOfLines={1}>
+                    {dosyaYolu.split('/').pop()}
+                  </Text>
+                  <Ionicons name="open-outline" size={18} color="#627C77" />
+                </TouchableOpacity>
+              ))}
+            </>
+          ) : params.dosyaYolu ? (
             <>
               <View style={styles.divider} />
               <Text style={styles.sectionTitle}>EKLI BELGE</Text>
@@ -163,7 +184,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#EAEFED', marginBottom: 20 },
   sectionTitle: { fontSize: 12, fontWeight: 'bold', color: '#A0AAB2', letterSpacing: 1, marginBottom: 10 },
   description: { fontSize: 16, color: '#2D3436', lineHeight: 24 },
-  documentRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F5F3', borderRadius: 12, padding: 14, gap: 10 },
+  documentRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F5F3', borderRadius: 12, padding: 14, gap: 10, marginBottom: 8 },
   documentLinkText: { flex: 1, fontSize: 14, color: '#00584E', fontWeight: '600' },
   // Tam ekran görüntüleyici için kapatma butonu stili
   closeViewerButton: { position: 'absolute', top: 50, right: 20, zIndex: 1000 },

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UygunsuzlukBackend.Data;
+using System.Text.Json.Serialization; // YENİ EKLENDİ: JSON döngü kuralı için gerekli kütüphane
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,12 @@ builder.Services.AddDbContext<UygunsuzlukDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2. Uygulamanın diğer standart servisleri
-builder.Services.AddControllers();
+// YENİ EKLENDİ: Sonsuz döngüye girmeyi engelleyen IgnoreCycles kuralı
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // API'mizi tarayıcıdan test etmek için
 
@@ -20,7 +26,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
 // 4. HTTP istek boru hattı (Pipeline) ayarları
 if (app.Environment.IsDevelopment())
 {
@@ -28,7 +34,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("AllowAll"); // CORS'u tek seferde burada çağırmak yeterli
 app.UseStaticFiles(); // wwwroot/uploads altındaki dosyalara erişim
 //app.UseHttpsRedirection();
 app.UseAuthorization();

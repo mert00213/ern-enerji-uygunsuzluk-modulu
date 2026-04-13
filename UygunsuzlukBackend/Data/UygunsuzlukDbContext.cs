@@ -9,6 +9,7 @@ namespace UygunsuzlukBackend.Data
 
         public DbSet<UygunsuzlukKaydi> Uygunsuzluklar { get; set; }
         public DbSet<Kullanici> Kullanicilar { get; set; }
+        public DbSet<UygunsuzlukDosya> UygunsuzlukDosyalari { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +26,13 @@ namespace UygunsuzlukBackend.Data
                 .WithMany()
                 .HasForeignKey(u => u.OlusturanKullaniciId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // UygunsuzlukKaydi -> UygunsuzlukDosya (Bire-Çok ilişki)
+            modelBuilder.Entity<UygunsuzlukDosya>()
+                .HasOne(d => d.Uygunsuzluk)
+                .WithMany(u => u.Dosyalar)
+                .HasForeignKey(d => d.UygunsuzlukId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

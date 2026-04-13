@@ -23,12 +23,21 @@ type SecilenDosya = {
   mimeType: string;
 };
 
+// Dosya uzantısına göre ikon döndüren yardımcı fonksiyon
+const getDosyaIkonu = (name: string): string => {
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (ext === 'pdf') return 'document-text';
+  if (ext === 'doc' || ext === 'docx') return 'document';
+  if (ext === 'xls' || ext === 'xlsx') return 'grid';
+  return 'document-attach';
+};
+
 export default function AddIssueScreen() {
   const router = useRouter();
   const [baslik, setBaslik] = useState('');
   const [aciklama, setAciklama] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [secilenDosya, setSecilenDosya] = useState<SecilenDosya | null>(null);
+  const [secilenDosyalar, setSecilenDosyalar] = useState<SecilenDosya[]>([]);
   const [kaydediliyor, setKaydediliyor] = useState(false); 
   const [hataModalVisible, setHataModalVisible] = useState(false);
   const [hataModalMesaj, setHataModalMesaj] = useState('');
@@ -57,27 +66,33 @@ export default function AddIssueScreen() {
     }
   };
 
-  // Dosya Yöneticisinden Belge Seçme (Sadece PDF, Word, Excel)
+  // Dosya Yöneticisinden Belge Seçme (Çoklu - Sadece PDF, Word, Excel)
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: IZIN_VERILEN_MIME_TIPLERI,
         copyToCacheDirectory: true,
+        multiple: true,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const asset = result.assets[0];
-        setSecilenDosya({
+        const yeniDosyalar: SecilenDosya[] = result.assets.map(asset => ({
           uri: asset.uri,
           name: asset.name,
           mimeType: asset.mimeType || 'application/octet-stream',
-        });
+        }));
+        setSecilenDosyalar(prev => [...prev, ...yeniDosyalar]);
       }
     } catch (error) {
       console.error('Dosya seçme hatası:', error);
       setHataModalMesaj('Dosya seçilirken bir sorun oluştu.');
       setHataModalVisible(true);
     }
+  };
+
+  // Seçilen dosyayı listeden kaldır
+  const dosyaKaldir = (index: number) => {
+    setSecilenDosyalar(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
@@ -104,14 +119,14 @@ export default function AddIssueScreen() {
         formData.append('OlusturanKullaniciId', odKullaniciId);
       }
 
-      // Seçilen belgeyi FormData'ya ekle
-      if (secilenDosya) {
-        formData.append('ekDosya', {
-          uri: secilenDosya.uri,
-          name: secilenDosya.name,
-          type: secilenDosya.mimeType,
+      // Seçilen belgeleri (çoklu) FormData'ya ekle
+      secilenDosyalar.forEach((dosya) => {
+        formData.append('ekBelgeler', {
+          uri: dosya.uri,
+          name: dosya.name,
+          type: dosya.mimeType,
         } as any);
-      }
+      });
 
       const response = await fetch('http://10.4.10.211:5075/api/Uygunsuzluk', {
         method: 'POST',
@@ -129,7 +144,7 @@ export default function AddIssueScreen() {
       setBaslik('');
       setAciklama('');
       setSelectedImages([]);
-      setSecilenDosya(null);
+      setSecilenDosyalar([]);
       setBasariliModalVisible(true);
 
     } catch (error: any) {
@@ -190,13 +205,17 @@ export default function AddIssueScreen() {
               <Text style={styles.mediaBtnText}>PDF, WORD VEYA EXCEL SEÇ</Text>
             </TouchableOpacity>
 
-            {secilenDosya && (
-              <View style={styles.selectedFileRow}>
-                <Ionicons name="checkmark-circle" size={18} color="#27AE60" />
-                <Text style={styles.selectedFileName} numberOfLines={1}>{secilenDosya.name}</Text>
-                <TouchableOpacity onPress={() => setSecilenDosya(null)}>
-                  <Ionicons name="close-circle" size={20} color="#E74C3C" />
-                </TouchableOpacity>
+            {secilenDosyalar.length > 0 && (
+              <View style={styles.selectedFilesContainer}>
+                {secilenDosyalar.map((dosya, index) => (
+                  <View key={index} style={styles.selectedFileRow}>
+                    <Ionicons name={getDosyaIkonu(dosya.name) as any} size={18} color="#00584E" />
+                    <Text style={styles.selectedFileName} numberOfLines={1}>{dosya.name}</Text>
+                    <TouchableOpacity onPress={() => dosyaKaldir(index)}>
+                      <Ionicons name="close-circle" size={20} color="#E74C3C" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
             )}
 
@@ -276,8 +295,9 @@ const styles = StyleSheet.create({
   
   // Dosya/Belge seçici butonu
   documentBtn: { borderWidth: 1.5, borderColor: '#D5DCDA', borderStyle: 'dashed', borderRadius: 12, padding: 15, alignItems: 'center', backgroundColor: '#F0F5F3', marginBottom: 10, marginTop: 5 },
-  selectedFileRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', borderRadius: 10, padding: 10, marginBottom: 10, gap: 8 },
+  selectedFileRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', borderRadius: 10, padding: 10, marginBottom: 6, gap: 8 },
   selectedFileName: { flex: 1, fontSize: 13, color: '#2D3436' },
+  selectedFilesContainer: { marginBottom: 10 },
 
   // Resim listesi için stil
   imageListContainer: { marginTop: 15, marginBottom: 5 },

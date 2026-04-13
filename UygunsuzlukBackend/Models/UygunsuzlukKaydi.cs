@@ -20,5 +20,8 @@ namespace UygunsuzlukBackend.Models
         public int? OlusturanKullaniciId { get; set; }
 
         public virtual Kullanici? OlusturanKullanici { get; set; }
+
+        // --- BİRE-ÇOK DOSYA İLİŞKİSİ ---
+        public virtual ICollection<UygunsuzlukDosya> Dosyalar { get; set; } = new List<UygunsuzlukDosya>();
     }
 }
